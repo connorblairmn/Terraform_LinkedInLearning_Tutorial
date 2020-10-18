@@ -2,14 +2,15 @@ provider "aws" {
   profile = "default"
   region  = "us-east-2"
 }
-
+//create s3 bucket 
 resource "aws_s3_bucket" "prod_tf_course" {
   bucket = "terraform-tutorial-bucket-20201015"
   acl    = "private"
 }
-
+//create default vpc
 resource "aws_default_vpc" "default" {}
 
+//create simple security group 
 resource "aws_security_group" "prod_web" {
   name       = "prod_web"
   description= "Allow standard http and https ports inbound and everything outbound."
@@ -40,4 +41,32 @@ resource "aws_security_group" "prod_web" {
   }
   
 }
+//ngxin instance (create 2)
+resource "aws_instance" "prod_web" {
+  count = 2
+  ami           = "ami-0743f105d738afe6a"
+  instance_type = "t2.nano"
+  vpc_security_group_ids = [
+    aws_security_group.prod_web.id
+  ]
+
+  tags = {
+    "Terraform" : "true"
+  }
+}
+//associate eip and instance 
+resource "aws_eip_association" "prod_web" {
+  instance_id   = aws_instance.prod_web[0].id
+  allocation_id = aws_eip.prod_web.id
+
+}
+
+//elastic IP
+resource "aws_eip" "prod_web" {
+    //instance = aws_instance.prod_web.id
+    tags = {
+    "Terraform" : "true"
+  }
+}
+
 
