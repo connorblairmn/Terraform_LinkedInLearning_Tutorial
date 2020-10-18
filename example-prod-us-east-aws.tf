@@ -9,6 +9,27 @@ resource "aws_s3_bucket" "prod_tf_course" {
 }
 //create default vpc
 resource "aws_default_vpc" "default" {}
+//create subnet in availability zone a
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "us-east-2a"
+  tags = {
+    "Terraform" : "true"
+  }
+}
+//create subnet in availability zone b
+resource "aws_default_subnet" "default_az2" {
+  availability_zone = "us-east-2b"
+  tags = {
+    "Terraform" : "true"
+  }
+}
+//create subnet in availability zone c
+resource "aws_default_subnet" "default_az3" {
+  availability_zone = "us-east-2c"
+  tags = {
+    "Terraform" : "true"
+  }
+}
 
 //create simple security group 
 resource "aws_security_group" "prod_web" {
@@ -65,6 +86,26 @@ resource "aws_eip_association" "prod_web" {
 resource "aws_eip" "prod_web" {
     //instance = aws_instance.prod_web.id
     tags = {
+    "Terraform" : "true"
+  }
+}
+
+//elastic load balancer 
+resource "aws_elb" "prod_web" {
+  name           = "prod-web"
+  //all instances in prod_web 
+  instances      = aws_instance.prod_web[*].id
+  subnets        = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id, aws_default_subnet.default_az3.id]
+  security_groups= [aws_security_group.prod_web.id]
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+  tags = {
     "Terraform" : "true"
   }
 }
