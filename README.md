@@ -10,7 +10,7 @@ Terraform show example.plan
 Terraform apply
 ```
 
-## Destorying the Resources on AWS
+## Destroying the Resources on AWS
 
 ```
 Terraform plan -destroy -out destroy.plan
